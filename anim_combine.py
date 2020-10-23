@@ -12,6 +12,10 @@ if len(sys.argv) < 3:
 DIR = sys.argv[1]
 OUTPUT = sys.argv[2]
 GROUPS = {}
+PREFIX = ''
+
+if len(sys.argv) >= 4:
+    PREFIX = sys.argv[3]
 
 if not os.path.exists(DIR):
     print('Directory '+DIR+' does not exist')
@@ -21,8 +25,13 @@ if not os.path.exists(OUTPUT):
     os.makedirs(OUTPUT)
 
 for entry in os.scandir(DIR):
-    pattern = re.compile(r"\d+\.png$")
-    prefix = pattern.split(entry.name)[0]
+    prefix = PREFIX
+    if prefix == '':
+        pattern = re.compile(r"\d+\.png$")
+        prefix = pattern.split(entry.name)[0]
+    elif not entry.name.startswith(prefix):
+        continue
+
     if GROUPS.get(prefix) is None:
         GROUPS[prefix] = []
 
