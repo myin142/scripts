@@ -34,6 +34,9 @@ def group_sprites(dir, PREFIX=None):
             GROUPS[prefix] = []
 
         GROUPS[prefix].append(entry.path)
+
+        # Animations should (hopefully) not have more than 10 sprites
+        GROUPS[prefix] = sorted(GROUPS[prefix])
     return GROUPS
 
 
