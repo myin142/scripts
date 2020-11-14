@@ -4,7 +4,6 @@ import shared
 import os
 import re
 import sys
-from PIL import Image
 import argparse
 
 parser = argparse.ArgumentParser(
@@ -19,7 +18,7 @@ args = parser.parse_args()
 DIR = args.directory
 PREFIX = args.prefix
 
-OUTPUT = shared.output_dir('anim_combine')
+OUTPUT = shared.output_dir(__file__)
 GROUPS = {}
 
 if not os.path.exists(DIR):
@@ -40,21 +39,10 @@ for entry in os.scandir(DIR):
     GROUPS[prefix].append(entry.path)
 
 for k in GROUPS:
-    images = [Image.open(x) for x in GROUPS[k]]
-    widths, heights = zip(*(i.size for i in images))
-
-    total_width = sum(widths)
-    max_height = max(heights)
-
-    new_im = Image.new('RGBA', (total_width, max_height))
-
-    x_offset = 0
-    for im in images:
-        new_im.paste(im, (x_offset, 0))
-        x_offset += im.size[0]
+    new_img = shared.merge_images(GROUPS[k])
 
     file_name = k
     if not file_name.endswith('.png'):
         file_name += '.png'
 
-    new_im.save(OUTPUT + '/' + file_name)
+    new_img.save(OUTPUT + '/' + file_name)
