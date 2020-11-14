@@ -20,6 +20,10 @@ def exit_if_not_found(dir):
         exit()
 
 
+def get_sprite_num(sprite_name):
+    return re.findall('[0-9]+', sprite_name)[-1]
+
+
 def group_sprites(dir, PREFIX=None):
     GROUPS = {}
     for entry in os.scandir(dir):
@@ -35,8 +39,7 @@ def group_sprites(dir, PREFIX=None):
 
         GROUPS[prefix].append(entry.path)
 
-        # Animations should (hopefully) not have more than 10 sprites
-        GROUPS[prefix] = sorted(GROUPS[prefix])
+        GROUPS[prefix] = sorted(GROUPS[prefix], key=get_sprite_num)
     return GROUPS
 
 
