@@ -2,7 +2,6 @@
 
 import shared
 import os
-import re
 import sys
 import argparse
 
@@ -18,25 +17,10 @@ args = parser.parse_args()
 DIR = args.directory
 PREFIX = args.prefix
 
+shared.exit_if_not_found(DIR)
+
 OUTPUT = shared.output_dir(__file__)
-GROUPS = {}
-
-if not os.path.exists(DIR):
-    print('Directory '+DIR+' does not exist')
-    exit()
-
-for entry in os.scandir(DIR):
-    prefix = PREFIX
-    if prefix == None:
-        pattern = re.compile(r"(-)?\d+\.png$")
-        prefix = pattern.split(entry.name)[0]
-    elif not entry.name.startswith(prefix):
-        continue
-
-    if GROUPS.get(prefix) is None:
-        GROUPS[prefix] = []
-
-    GROUPS[prefix].append(entry.path)
+GROUPS = shared.group_sprites(DIR, PREFIX)
 
 for k in GROUPS:
     new_img = shared.merge_images(GROUPS[k])

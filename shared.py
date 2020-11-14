@@ -1,5 +1,6 @@
 import os
 import math
+import re
 from PIL import Image
 
 OUTPUT = './output/'
@@ -13,6 +14,29 @@ def output_dir(file):
     return path
 
 
+def exit_if_not_found(dir):
+    if not os.path.exists(dir):
+        print('Directory '+dir+' does not exist')
+        exit()
+
+
+def group_sprites(dir, PREFIX=None):
+    GROUPS = {}
+    for entry in os.scandir(dir):
+        prefix = PREFIX
+        if prefix == None:
+            pattern = re.compile(r"(-)?\d+\.png$")
+            prefix = pattern.split(entry.name)[0]
+        elif not entry.name.startswith(prefix):
+            continue
+
+        if GROUPS.get(prefix) is None:
+            GROUPS[prefix] = []
+
+        GROUPS[prefix].append(entry.path)
+    return GROUPS
+
+
 # images should be the same sizes if merging with multiple rows
 def merge_images(images, max_columns=-1):
     imgs = [Image.open(i) for i in images]
@@ -21,10 +45,24 @@ def merge_images(images, max_columns=-1):
     width = max(widths)
     height = max(heights)
 
-    rows = 1 if max_columns == -1 else math.ceil(len(images) / max_columns)
-    total_width = sum(widths) if max_columns == -1 else max_columns * width
-    max_height = rows * height
+    for w in widths:
+        if w != width:
+            print('Width of one image is not the same', widths)
+            exit()
 
+    for h in heights:
+        if h != height:
+            print('Height of one image is not the same', heights)
+            exit()
+
+    rows = 1
+    total_width = sum(widths)
+
+    if max_columns != -1:
+        rows = math.ceil(len(images) / max_columns)
+        total_width = min(max_columns, len(images)) * width
+
+    max_height = rows * height
     new_im = Image.new('RGBA', (total_width, max_height))
 
     x_offset = 0

@@ -2,6 +2,7 @@ import shared
 import argparse
 import os
 import math
+import re
 
 parser = argparse.ArgumentParser(
     description='creates a spritesheet from a folder with sprites')
@@ -15,13 +16,15 @@ args = parser.parse_args()
 DIR = args.directory
 COL = args.columns if args.columns else 1
 
-if not os.path.exists(DIR):
-    print('Directory '+DIR+' does not exist')
-    exit()
+shared.exit_if_not_found(DIR)
 
 OUTPUT = shared.output_dir(__file__)
+GROUPS = shared.group_sprites(DIR, None)
 
-files = [entry.path for entry in os.scandir(DIR)]
+files = []
+for k in GROUPS:
+    files += GROUPS[k]
+
 spritesheet = shared.merge_images(files, COL)
 spritesheet.save('/'.join([OUTPUT, 'spritesheet.png']))
 
