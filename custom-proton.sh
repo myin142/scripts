@@ -16,6 +16,7 @@ fi
 
 if [ ! =d "$name" ]; then
     tar xzf $file
+    chmod +x "$name/proton" "$name/dist/bin/*"
 fi
 
 if [ ! -d "$location/$name" ]; then
