@@ -14,7 +14,7 @@ parser.add_argument('-c', '--columns', type=int,
 args = parser.parse_args()
 
 DIRS = args.directory
-COL = args.columns if args.columns else 1
+COL = args.columns if args.columns else -1
 
 GROUPS = {}
 for DIR in DIRS:
@@ -33,7 +33,7 @@ files = []
 for k in GROUPS:
     files += GROUPS[k]
 
-spritesheet = shared.merge_images(files, COL)
+spritesheet = shared.merge_images(files, COL, True)
 spritesheet.save('/'.join([OUTPUT, 'spritesheet.png']))
 
 print(str(COL) + 'x' + str(math.ceil(len(files)/COL)))

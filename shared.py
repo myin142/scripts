@@ -44,25 +44,26 @@ def group_sprites(dir, PREFIX=None):
 
 
 # images should be the same sizes if merging with multiple rows
-def merge_images(images, max_columns=-1):
+def merge_images(images, max_columns=-1, use_max_sizes=False):
     imgs = [Image.open(i) for i in images]
     widths, heights = zip(*(i.size for i in imgs))
 
     width = max(widths)
     height = max(heights)
 
-    for w in widths:
-        if w != width:
-            print('Width of one image is not the same', widths)
-            exit()
+    if not use_max_sizes:
+        for w in widths:
+            if w != width:
+                print('Width of one image is not the same', widths)
+                exit()
 
-    for h in heights:
-        if h != height:
-            print('Height of one image is not the same', heights)
-            exit()
+        for h in heights:
+            if h != height:
+                print('Height of one image is not the same', heights)
+                exit()
 
     rows = 1
-    total_width = sum(widths)
+    total_width = len(images) * width
 
     if max_columns != -1:
         rows = math.ceil(len(images) / max_columns)
@@ -74,10 +75,13 @@ def merge_images(images, max_columns=-1):
     x_offset = 0
     y_offset = 0
     for im in imgs:
-        new_im.paste(im, (x_offset, y_offset))
-        x_offset += im.size[0]
+        missing_width = width - im.size[0]
+        left_width = math.floor(missing_width / 2)
+        new_im.paste(im, (x_offset + left_width, y_offset))
+        x_offset += width
         if x_offset >= total_width:
             x_offset = 0
             y_offset += im.size[1]
 
+    print(total_width)
     return new_im
