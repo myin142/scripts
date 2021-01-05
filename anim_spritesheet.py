@@ -35,5 +35,3 @@ for k in GROUPS:
 
 spritesheet = shared.merge_images(files, COL, True)
 spritesheet.save('/'.join([OUTPUT, 'spritesheet.png']))
-
-print(str(COL) + 'x' + str(math.ceil(len(files)/COL)))

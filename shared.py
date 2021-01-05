@@ -45,7 +45,7 @@ def group_sprites(dir, PREFIX=None):
 
 # images should be the same sizes if merging with multiple rows
 def merge_images(images, max_columns=-1, use_max_sizes=False):
-    imgs = [Image.open(i) for i in images]
+    imgs = [Image.open(i) for i in images if i.endswith('.png')]
     widths, heights = zip(*(i.size for i in imgs))
 
     width = max(widths)
@@ -63,7 +63,7 @@ def merge_images(images, max_columns=-1, use_max_sizes=False):
                 exit()
 
     rows = 1
-    total_width = len(images) * width
+    total_width = len(imgs) * width
 
     if max_columns != -1:
         rows = math.ceil(len(images) / max_columns)
@@ -72,10 +72,15 @@ def merge_images(images, max_columns=-1, use_max_sizes=False):
     max_height = rows * height
     new_im = Image.new('RGBA', (total_width, max_height))
 
+    print(str(width) + 'x' + str(height) + ', ' +
+          str(total_width) + 'x' + str(max_height))
+
     x_offset = 0
     y_offset = 0
     for im in imgs:
         missing_width = width - im.size[0]
+        print(str(im.size[0]) + ', ' +
+              str(missing_width) + ' - ' + str(x_offset))
         left_width = math.floor(missing_width / 2)
         new_im.paste(im, (x_offset + left_width, y_offset))
         x_offset += width
@@ -83,5 +88,4 @@ def merge_images(images, max_columns=-1, use_max_sizes=False):
             x_offset = 0
             y_offset += im.size[1]
 
-    print(total_width)
     return new_im
