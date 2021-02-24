@@ -21,7 +21,10 @@ def exit_if_not_found(dir):
 
 
 def get_sprite_num(sprite_name):
-    return re.findall('[0-9]+', sprite_name)[-1]
+    result = re.findall('[0-9]+', sprite_name)
+    if len(result) == 0:
+        return -1
+    return result[-1]
 
 
 def group_sprites(dir, PREFIX=None):
