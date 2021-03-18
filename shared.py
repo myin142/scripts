@@ -30,7 +30,7 @@ def output_dir(file):
 
 def exit_if_not_found(dir):
     if not os.path.exists(dir):
-        print('Directory '+dir+' does not exist')
+        print('Path ' + dir + ' does not exist')
         exit()
 
 
