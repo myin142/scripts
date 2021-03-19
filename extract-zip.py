@@ -7,7 +7,7 @@ parser.add_argument('zip_file')
 parser.add_argument('filename')
 parser.add_argument('-m', '--match', default='exact',
                     choices=['exact', 'starts_with', 'ends_with'])
-parser.add_argument('--unzip', default=False)
+parser.add_argument('--unzip', default=False, action='store_true')
 args = parser.parse_args()
 
 OUTPUT = shared.output_dir(__file__)
