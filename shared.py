@@ -2,6 +2,7 @@ import os
 import math
 import re
 from PIL import Image
+import shutil
 
 OUTPUT = './output/'
 
@@ -23,8 +24,9 @@ def color(str, color):
 def output_dir(file):
     name = os.path.basename(file).split('.')[0]
     path = OUTPUT + name
-    if not os.path.exists(path):
-        os.makedirs(path)
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path)
     return path
 
 

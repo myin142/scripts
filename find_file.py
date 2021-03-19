@@ -30,3 +30,5 @@ print('Searched folder {} for text "{}"'.format(FOLDER, txt))
 for f in files:
     print(color(f + ':', Colors.HEADER))
     print(files[f])
+
+print(color(f'\nFound in {len(files)} files', Colors.OKGREEN))
