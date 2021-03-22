@@ -9,6 +9,7 @@ parser.add_argument('text')
 parser.add_argument('--match-file-name', default=False, action='store_true')
 parser.add_argument('--snippet-size', default=40, type=int)
 parser.add_argument('--depth', default=1, type=int)
+parser.add_argument('--verbose', default=False, action='store_true')
 args = parser.parse_args()
 
 
@@ -20,8 +21,10 @@ max_depth = args.depth
 files = {}
 
 def search_in_folder(dir, depth=1):
-    print(f'Search in directory {dir}')
     files[dir] = {}
+
+    if args.verbose:
+        print(f'Search in directory {dir}')
 
     for filename in os.listdir(dir):
         path = os.path.join(dir, filename)
@@ -41,20 +44,22 @@ def search_in_folder(dir, depth=1):
                             files[dir][filename] = content[start:end].replace(
                                 txt, color(txt, Colors.FAIL))
                     except:
-                        print(f'Failed to read content of file {path}')
+                        if args.verbose:
+                            print(f'Failed to read content of file {path}')
 
         elif depth < max_depth and os.path.isdir(path):
             search_in_folder(path, depth + 1)
 
-print(f'Searching for text "{txt}"')
+if args.verbose:
+    print(f'Searching for text "{txt}"')
 search_in_folder(FOLDER)
 
+count = 0
 for dir in files:
     for f in files[dir]:
-        path = f
-        if max_depth > 1:
-            path = os.path.join(dir, f)
+        count += 1
+        path = os.path.join(dir, f)
         print(color(path + ':', Colors.HEADER))
         print(files[dir][f])
 
-print(color(f'\nFound in {len(files)} files', Colors.OKGREEN))
+print(color(f'\nFound in {count} files', Colors.OKGREEN))
