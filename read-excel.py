@@ -10,7 +10,7 @@ import numbers
 parser = ArgumentParser()
 parser.add_argument('file')
 parser.add_argument('--sheet-name', default=0)
-parser.add_argument('--filter') # Example 0=Value,1=Test
+parser.add_argument('--filter') # Example 0=Value,Value2;1=Test
 args = parser.parse_args()
 
 if not os.path.exists(args.file):
@@ -38,13 +38,15 @@ FILE = OUTPUT + '/result.json'
 
 filter_values = {}
 if args.filter:
-    for pair in args.filter.split(','):
-        split = pair.split('=')
-        if split[0].isnumeric():
-            idx = int(split[0])
+    for pair in args.filter.split(';'):
+        filters = pair.split('=')
+        if filters[0].isnumeric():
+            idx = int(filters[0])
             if idx >= 0 and idx < len(sheet.columns):
                 col_name = sheet.columns[idx]
-                filter_values[col_name] = split[1]
+                filter_values[col_name] = [f.strip(' ') for f in filters[1].split(',') ]
+
+print(filter_values)
 
 with open(FILE, 'w') as f:
     all_result = []
@@ -59,10 +61,12 @@ with open(FILE, 'w') as f:
                 value = ""
 
             if col in filter_values:
-                filter_value = filter_values[col]
+                filters = filter_values[col]
 
-                if filter_value and value != filter_value:
-                    filtered = True
+                filtered = True
+                for filter_value in filters:
+                    if value == filter_value:
+                        filtered = False
 
             result[col] = value
 
