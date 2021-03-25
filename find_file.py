@@ -5,16 +5,16 @@ from shared import Colors, color
 
 parser = ArgumentParser()
 parser.add_argument('folder')
-parser.add_argument('text')
-parser.add_argument('--match-file-name', default=False, action='store_true')
+parser.add_argument('--file')
+parser.add_argument('--content')
 parser.add_argument('--snippet-size', default=40, type=int)
-parser.add_argument('--depth', default=1, type=int)
-parser.add_argument('--verbose', default=False, action='store_true')
+parser.add_argument('-d', '--depth', default=1, type=int)
+parser.add_argument('-v', '--verbose', default=False, action='store_true')
 args = parser.parse_args()
 
 
 FOLDER = args.folder
-txt = args.text
+txt = args.content
 snippet_size = args.snippet_size
 max_depth = args.depth
 
@@ -29,8 +29,8 @@ def search_in_folder(dir, depth=1):
     for filename in os.listdir(dir):
         path = os.path.join(dir, filename)
         if os.path.isfile(path):
-            if args.match_file_name:
-                if txt in filename:
+            if args.file:
+                if args.file in filename:
                     files[dir][filename] = ''
             else:
                 with open(path, 'r') as f:
