@@ -23,10 +23,11 @@ with open(FILE, "r") as f:
     
 parsed_code = []
 
-unicode_map = {
+replace_map = {
     '\u00b5': 'my',
     '\u00b3': '3',
     '\u00b2': '2',
+    '%': 'percentage',
 }
 
 with open('output.txt', 'w') as f:
@@ -35,11 +36,11 @@ with open('output.txt', 'w') as f:
 
         # without_bracket_content = re.sub('\(.*?\)', '', name).strip(' ')
 
-        unicode_removed = name
-        for ucode in unicode_map:
-            unicode_removed = re.sub(ucode, unicode_map[ucode], unicode_removed)
+        replaced = name
+        for v in replace_map:
+            replaced = re.sub(v, replace_map[v], replaced)
 
-        no_special = re.sub('[^a-zA-Z0-9_ \n]', ' ', unicode_removed)
+        no_special = re.sub('[^a-zA-Z0-9_ \n]', ' ', replaced)
         normalized = re.sub('[ ]+', '_', no_special.strip(' ').upper())
 
         #f.write('|' + name + '|' + str(code) + '|\n') # For creating table in Confluence

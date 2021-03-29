@@ -2,3 +2,4 @@ ignored/
 output/
 __pycache__/
 output.*
+*.txt
