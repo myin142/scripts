@@ -66,6 +66,7 @@ for r in range(row):
         alpha = sprite.getchannel('A')
         alpha_data = alpha.getdata()
         if alpha_data[0] == 0 and all(x == alpha_data[0] for x in alpha_data):
+            print('Skip')
             continue
 
         sprite.save('/'.join([OUTPUT, 'sprite_{}.png'.format(count)]))
