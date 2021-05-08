@@ -48,7 +48,7 @@ def search_in_folder(dir, depth=1):
                         if args.verbose:
                             print(f'Failed to read content of file {path}')
 
-        elif depth < max_depth and os.path.isdir(path):
+        elif (max_depth == -1 or depth < max_depth) and os.path.isdir(path):
             search_in_folder(path, depth + 1)
 
 
