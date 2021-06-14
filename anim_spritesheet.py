@@ -19,7 +19,8 @@ COL = args.columns if args.columns else -1
 GROUPS = {}
 for DIR in DIRS:
     shared.exit_if_not_found(DIR)
-    dir_groups = shared.group_sprites(DIR, None)
+    dir_groups = shared.group_sprites(
+        DIR, ['color_green_', 'color_purple_', 'color_red_', 'color_yellow_', 'color_z_'])
 
     for k in dir_groups:
         if GROUPS.get(k) == None:

@@ -1,10 +1,12 @@
 import os
 import math
 import re
+import sys
 from PIL import Image
 import shutil
 
 OUTPUT = './output/'
+
 
 class Colors:
     HEADER = '\033[95m'
@@ -16,6 +18,7 @@ class Colors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+
 
 def color(str, color):
     return f"{color}{str}{Colors.ENDC}"
@@ -39,27 +42,35 @@ def exit_if_not_found(dir):
 def get_sprite_num(sprite_name):
     result = re.findall('[0-9]+', sprite_name)
     if len(result) == 0:
-        return -1
-    return result[-1]
+        return sys.maxsize
+    return int(result[-1])
 
 
-def group_sprites(dir, PREFIX=None):
+def group_sprites(dir, PREFIXES=[]):
     GROUPS = {}
     for entry in os.scandir(dir):
-        prefix = PREFIX
+        prefix = find_starting_prefix(entry.name, PREFIXES)
         if prefix == None:
-            pattern = re.compile(r"(-)?\d+\.png$")
-            prefix = pattern.split(entry.name)[0]
-        elif not entry.name.startswith(prefix):
-            continue
+            if len(PREFIXES) == 0:
+                pattern = re.compile(r"(-)?\d+\.png$")
+                prefix = pattern.split(entry.name)[0]
+            else:
+                continue
 
         if GROUPS.get(prefix) is None:
             GROUPS[prefix] = []
 
         GROUPS[prefix].append(entry.path)
 
-        GROUPS[prefix] = sorted(GROUPS[prefix], key=get_sprite_num)
+        GROUPS[prefix] = sorted(GROUPS[prefix], key=lambda e: (get_sprite_num(e), e))
     return GROUPS
+
+
+def find_starting_prefix(name, prefixes):
+    for prefix in prefixes:
+        if name.startswith(prefix):
+           return prefix
+    return None
 
 
 # images should be the same sizes if merging with multiple rows
@@ -98,8 +109,6 @@ def merge_images(images, max_columns=-1, use_max_sizes=False):
     y_offset = 0
     for im in imgs:
         missing_width = width - im.size[0]
-        print(str(im.size[0]) + ', ' +
-              str(missing_width) + ' - ' + str(x_offset))
         left_width = math.floor(missing_width / 2)
         new_im.paste(im, (x_offset + left_width, y_offset))
         x_offset += width

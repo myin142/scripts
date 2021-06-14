@@ -20,7 +20,7 @@ PREFIX = args.prefix
 shared.exit_if_not_found(DIR)
 
 OUTPUT = shared.output_dir(__file__)
-GROUPS = shared.group_sprites(DIR, PREFIX)
+GROUPS = shared.group_sprites(DIR, [PREFIX])
 
 for k in GROUPS:
     new_img = shared.merge_images(GROUPS[k])
