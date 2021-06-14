@@ -10,17 +10,18 @@ parser.add_argument('-d', '--directory', required=True, action='append',
                     help='directory where animation sprites are located')
 parser.add_argument('-c', '--columns', type=int,
                     help='How many columns the spritesheet should have. Leave empty to have only one row')
+parser.add_argument('--prefix', nargs='+', default=[])
 
 args = parser.parse_args()
 
 DIRS = args.directory
 COL = args.columns if args.columns else -1
+PREFIXES = args.prefix
 
 GROUPS = {}
 for DIR in DIRS:
     shared.exit_if_not_found(DIR)
-    dir_groups = shared.group_sprites(
-        DIR, ['color_green_', 'color_purple_', 'color_red_', 'color_yellow_', 'color_z_'])
+    dir_groups = shared.group_sprites(DIR, PREFIXES)
 
     for k in dir_groups:
         if GROUPS.get(k) == None:
@@ -33,6 +34,10 @@ OUTPUT = shared.output_dir(__file__)
 files = []
 for k in GROUPS:
     files += GROUPS[k]
+
+if len(files) == 0:
+    print('No files found')
+    exit()
 
 spritesheet = shared.merge_images(files, COL, True)
 spritesheet.save('/'.join([OUTPUT, 'spritesheet.png']))
