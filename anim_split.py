@@ -11,6 +11,7 @@ parser.add_argument('-f', '--file', required=True, help='spritesheet file')
 parser.add_argument('-s', '--size', required=True,
                     help='number of columns and rows (e.g 30x20)')
 parser.add_argument('-g', '--gap', help='gap between column and rows in pixel')
+parser.add_argument('--prefix', help='Prefix of file names', default='sprite')
 
 args = parser.parse_args()
 
@@ -69,7 +70,7 @@ for r in range(row):
             print('Skip')
             continue
 
-        sprite.save('/'.join([OUTPUT, 'sprite_{}.png'.format(count)]))
+        sprite.save('/'.join([OUTPUT, '{}_{}.png'.format(args.prefix, count)]))
         count += 1
 
 print('Extracted ' + str(count) + ' sprites.')

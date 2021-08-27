@@ -23,8 +23,10 @@ OUTPUT = shared.output_dir(__file__)
 GROUPS = shared.group_sprites(DIR, PREFIXES)
 
 MERGED = []
-for k in GROUPS:
-    for img in GROUPS[k]:
+for prefix in PREFIXES:
+    if GROUPS.get(prefix) is None: continue
+
+    for img in GROUPS[prefix]:
         MERGED.append(img)
 
 new_img = shared.merge_images(MERGED)
