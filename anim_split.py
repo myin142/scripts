@@ -12,6 +12,8 @@ parser.add_argument('-s', '--size', required=True,
                     help='number of columns and rows (e.g 30x20)')
 parser.add_argument('-g', '--gap', help='gap between column and rows in pixel')
 parser.add_argument('--prefix', help='Prefix of file names', default='sprite')
+parser.add_argument('--output-same-dir', default=False, action='store_true')
+parser.add_argument('--start-index', type=int, default=0)
 
 args = parser.parse_args()
 
@@ -25,7 +27,11 @@ if len(SIZES) != 2:
 
 col = int(SIZES[0])
 row = int(SIZES[1])
+
 OUTPUT = shared.output_dir(__file__)
+if args.output_same_dir:
+    full_file_path = os.path.realpath(FILE)
+    OUTPUT = os.path.dirname(full_file_path)
 
 print('Size {}x{}'.format(col, row))
 
@@ -58,7 +64,7 @@ if not HEIGHT.is_integer():
 
 print('Extracting with size {}x{}'.format(WIDTH, HEIGHT))
 
-count = 0
+count = args.start_index
 for r in range(row):
     for c in range(col):
         left = c * (WIDTH + gap_pixel)
