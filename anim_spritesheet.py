@@ -10,6 +10,7 @@ parser.add_argument('-d', '--directory', required=True, action='append',
                     help='directory where animation sprites are located')
 parser.add_argument('-c', '--columns', type=int,
                     help='How many columns the spritesheet should have. Leave empty to have only one row')
+parser.add_argument('-g', '--gap', type=int, default=0, help='add gap between column and rows in pixel')
 parser.add_argument('--prefix', nargs='+', default=[])
 
 args = parser.parse_args()
@@ -39,5 +40,5 @@ if len(files) == 0:
     print('No files found')
     exit()
 
-spritesheet = shared.merge_images(files, COL, True)
+spritesheet = shared.merge_images(files, COL, True, args.gap)
 spritesheet.save('/'.join([OUTPUT, 'spritesheet.png']))

@@ -74,7 +74,7 @@ def find_starting_prefix(name, prefixes):
 
 
 # images should be the same sizes if merging with multiple rows
-def merge_images(images, max_columns=-1, use_max_sizes=False):
+def merge_images(images, max_columns=-1, use_max_sizes=False, gap=0):
     imgs = [Image.open(i) for i in images if i.endswith('.png')]
     widths, heights = zip(*(i.size for i in imgs))
 
@@ -93,17 +93,17 @@ def merge_images(images, max_columns=-1, use_max_sizes=False):
                 exit()
 
     rows = 1
-    total_width = len(imgs) * width
+    col_count = len(imgs) if max_columns == -1 else min(max_columns, len(imgs))
+    total_width = (col_count * width) + ((col_count-1) * gap)
 
     if max_columns != -1:
         rows = math.ceil(len(images) / max_columns)
-        total_width = min(max_columns, len(images)) * width
 
-    max_height = rows * height
+    max_height = (rows * height) + ((rows-1) * gap)
     new_im = Image.new('RGBA', (total_width, max_height))
 
     print(str(width) + 'x' + str(height) + ', ' +
-          str(total_width) + 'x' + str(max_height))
+          str(total_width) + 'x' + str(max_height) + ', Gap: ' + str(gap))
 
     x_offset = 0
     y_offset = 0
@@ -111,9 +111,9 @@ def merge_images(images, max_columns=-1, use_max_sizes=False):
         missing_width = width - im.size[0]
         left_width = math.floor(missing_width / 2)
         new_im.paste(im, (x_offset + left_width, y_offset))
-        x_offset += width
+        x_offset += width + gap
         if x_offset >= total_width:
             x_offset = 0
-            y_offset += im.size[1]
+            y_offset += im.size[1] + gap
 
     return new_im
