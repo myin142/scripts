@@ -20,15 +20,17 @@ def print_random_character(data):
 
 
 animes = [
-    106980, # Hololive
-    108305, # Spy x Family
-    106225, # Kaguya
-    106339, # Kimetsu
-    107496, # Mushoku
-    100135, # Vocaloid
-    106146, # Gotoubun
-    107379, # Genshin
-    105402, # LoL
+    #106980, # Hololive
+    #108305, # Spy x Family
+    #106225, # Kaguya
+    #106339, # Kimetsu
+    #107496, # Mushoku
+    #100135, # Vocaloid
+    #106146, # Gotoubun
+    #107379, # Genshin
+    #105402, # LoL
+    #107018, # Arkknights
+    107624, # Blue Archive
 ]
 anime_id = random.choice(animes)
 info = get_anime_info(anime_id)
