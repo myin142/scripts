@@ -22,14 +22,10 @@ shared.exit_if_not_found(DIR)
 OUTPUT = shared.output_dir(__file__)
 GROUPS = shared.group_sprites(DIR, PREFIXES)
 
-MERGED = []
-for prefix in PREFIXES:
-    if GROUPS.get(prefix) is None: continue
+for key in GROUPS:
+    new_img = shared.merge_images(GROUPS[key])
 
-    for img in GROUPS[prefix]:
-        MERGED.append(img)
+    name = key.replace("_", "")
+    file_name = f'{name}.png'
+    new_img.save(OUTPUT + '/' + file_name)
 
-new_img = shared.merge_images(MERGED)
-
-file_name = 'sprite.png'
-new_img.save(OUTPUT + '/' + file_name)
