@@ -19,14 +19,14 @@ def export(node, i):
         #    return
 
         info = InfoObject()
-        rect = QRect(sel.x(), sel.y(), sel.width(), sel.height())
+        rect = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else doc.bounds()
         name = node.name()
         file = '{}/{}_{}.png'.format(folder, name, i)
 
         node.save(file, doc.xRes(), doc.yRes(), info, rect)
         print("Export layer {} at frame {}".format(name, i))
 
-if sel and node:
+if node:
     folder = QFileDialog.getExistingDirectory()
     if folder:
         #fps = doc.framesPerSecond()
