@@ -36,7 +36,7 @@ if sel and node:
 
         length = doc.animationLength()
         print("Exporting {} frames".format(length))
-        for i in range(doc.playBackStartTime(), doc.playBackEndTime()):
+        for i in range(doc.playBackStartTime(), doc.playBackEndTime() + 1):
             print("Exporting frame {}".format(i))
             doc.setCurrentTime(i)
             export(node, i)
