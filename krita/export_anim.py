@@ -26,9 +26,10 @@ def export(node, i, prefix = ""):
     node_name = node.name().strip()
     if node_name.startswith(">"):
         for child in node.childNodes():
-            export(child, i, node_name[1:] + "_")
+            export(child, i, node_name[1:].strip() + "_")
     else:
         if not has_keyframe_at(node, i):
+            #print("No keyframe at {} for {}".format(i, node_name))
             return
 
         name = prefix + node.name()
@@ -44,12 +45,15 @@ if node:
         #images = []
 
         name = node.name()
-        length = doc.animationLength()
+        start = doc.playBackStartTime()
+        end = doc.playBackEndTime() + 1
+        length = end - start
         print("Exporting {} frames".format(length))
 
-        for i in range(doc.playBackStartTime(), doc.playBackEndTime() + 1):
-            print("Exporting frame {}".format(i))
+        for i in range(start, end):
+            #print("Exporting frame {}".format(i))
             doc.setCurrentTime(i)
+            doc.waitForDone()
             export(node, i)
 
             #images.append(imageio.imread(file))
