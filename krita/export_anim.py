@@ -6,21 +6,32 @@ import imageio
 doc = Krita.instance().activeDocument()
 sel = doc.selection()
 node = doc.activeNode()
+info = InfoObject()
+rect = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else doc.bounds()
 
-def export(node, i):
-    if node.name().startswith("Group"):
-        for child in node.childNodes():
-            export(child, i)
+def has_keyframe_at(node, frame):
+    children = node.childNodes()
+    if children:
+        for child in children:
+            if has_keyframe_at(child, frame):
+                return True
+        return False
     else:
-        #if not node.animated() and i != 0:
-        #    return
-        #
-        #if node.animated() and not node.hasKeyframeAtTime(i):
-        #    return
+        if node.animated():
+            return node.hasKeyframeAtTime(frame)
+        else:
+            return frame == 0 and node.hasExtents()
 
-        info = InfoObject()
-        rect = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else doc.bounds()
-        name = node.name()
+def export(node, i, prefix = ""):
+    node_name = node.name().strip()
+    if node_name.startswith(">"):
+        for child in node.childNodes():
+            export(child, i, node_name[1:] + "_")
+    else:
+        if not has_keyframe_at(node, i):
+            return
+
+        name = prefix + node.name()
         file = '{}/{}_{}.png'.format(folder, name, i)
 
         node.save(file, doc.xRes(), doc.yRes(), info, rect)
@@ -33,9 +44,9 @@ if node:
         #images = []
 
         name = node.name()
-
         length = doc.animationLength()
         print("Exporting {} frames".format(length))
+
         for i in range(doc.playBackStartTime(), doc.playBackEndTime() + 1):
             print("Exporting frame {}".format(i))
             doc.setCurrentTime(i)
