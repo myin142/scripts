@@ -24,9 +24,12 @@ def has_keyframe_at(node, frame):
 
 def export(node, i, prefix = ""):
     node_name = node.name().strip()
+    if not node.visible():
+        return
+    
     if node_name.startswith(">"):
         for child in node.childNodes():
-            export(child, i, node_name[1:].strip() + "_")
+            export(child, i, prefix + node_name[1:].strip() + "_")
     else:
         if not has_keyframe_at(node, i):
             #print("No keyframe at {} for {}".format(i, node_name))
