@@ -1,7 +1,8 @@
+# Apply the selected mask to all layers inside the group
+# useful when using transform mask with animation frames
+
 doc = Krita.instance().activeDocument()
 mask = doc.activeNode()
-
-
 
 if not mask.type().endswith('mask'):
     print("Node is not a mask: " + mask.type())
