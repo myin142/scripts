@@ -29,8 +29,13 @@ def export(node, i, prefix = ""):
     
     if node_name.startswith(">"):
         for child in node.childNodes():
-            export(child, i, prefix + node_name[1:].strip() + "_")
-    else:
+            new_prefix = prefix
+            if not node_name.endswith("<"):
+                new_prefix += node_name[1:].strip()
+            if new_prefix != "":
+                new_prefix += "_"
+            export(child, i, new_prefix)
+    elif not node_name.startswith("_"):
         if not has_keyframe_at(node, i):
             #print("No keyframe at {} for {}".format(i, node_name))
             return
