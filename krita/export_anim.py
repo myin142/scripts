@@ -7,7 +7,7 @@ doc = Krita.instance().activeDocument()
 sel = doc.selection()
 node = doc.activeNode()
 info = InfoObject()
-rect = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else doc.bounds()
+rect = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else None
 
 def has_keyframe_at(node, frame):
     children = node.childNodes()
@@ -43,7 +43,8 @@ def export(node, i, prefix = ""):
         name = prefix + node.name()
         file = '{}/{}_{}.png'.format(folder, name, i)
 
-        node.save(file, doc.xRes(), doc.yRes(), info, rect)
+        actual_rect = node.bounds() if rect is None else rect
+        node.save(file, doc.xRes(), doc.yRes(), info, actual_rect)
         print("Export layer {} at frame {}".format(name, i))
 
 if node:
