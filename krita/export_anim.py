@@ -3,6 +3,13 @@ from PyQt5.QtCore import *
 from krita import InfoObject
 import imageio
 
+ignore_start = "_" # ignore
+group_start = ">" # export each child of the group
+skip_group_name_end = "<" # don't add the group name to the prefix if name is ">GROUP<"
+child_toggle_start = "@" # the parent will be exported with each child toggled
+
+filename_sep = "_"
+
 doc = Krita.instance().activeDocument()
 sel = doc.selection()
 node = doc.activeNode()
@@ -22,40 +29,75 @@ def has_keyframe_at(node, frame):
         else:
             return frame == 0 and node.hasExtents()
 
+def export_node(node, filename, name = node.name()):
+    actual_rect = node.bounds() if rect is None else rect
+    node.save(filename, doc.xRes(), doc.yRes(), info, actual_rect)
+    print("Export layer {} at frame {}".format(name, i))
+
+def create_filename(name, i):
+    file = '{}/{}{}{}.png'.format(folder, name, filename_sep, i)
+    
+    if i == 0 and not has_keyframe_at(node, i + 1):
+        file = '{}/{}.png'.format(folder, name)
+        
+    return file    
+    
+def join_filename(names):
+    result = ""
+    for i in range(0, len(names)):
+        name = names[i].strip()
+        if name == "": continue
+        result += name
+        if i != len(names) - 1:
+            result += filename_sep
+    return result
+
 def export(node, i, prefix = ""):
     node_name = node.name().strip()
     if not node.visible():
         return
     
-    if node_name.startswith(">"):
+    if node_name.startswith(group_start):
         for child in node.childNodes():
             new_prefix = prefix
-            if not node_name.endswith("<"):
+            if not node_name.endswith(skip_group_name_end):
                 new_prefix += node_name[1:].strip()
             if new_prefix != "":
-                new_prefix += "_"
+                new_prefix += filename_sep
             export(child, i, new_prefix)
-    elif not node_name.startswith("_"):
+    elif not node_name.startswith(ignore_start):
         if not has_keyframe_at(node, i):
             #print("No keyframe at {} for {}".format(i, node_name))
             return
-
-        name = prefix + node.name()
-        file = '{}/{}_{}.png'.format(folder, name, i)
         
-        if not has_keyframe_at(node, i + 1):
-            file = '{}/{}.png'.format(folder, name)
+        toggle_group = None
+        if node.childNodes():
+            for child in node.childNodes():
+                if child.visible() and child.childNodes() \
+                    and child.name().strip().startswith(child_toggle_start):
+                    toggle_group = child
 
-        actual_rect = node.bounds() if rect is None else rect
-        node.save(file, doc.xRes(), doc.yRes(), info, actual_rect)
-        print("Export layer {} at frame {}".format(name, i))
+        if toggle_group == None:
+            file = create_filename(prefix + node_name, i)
+            export_node(node, file)
+        else:
+            print("Start exporting toggle group for {}".format(prefix + node_name))
+            for child in toggle_group.childNodes():
+                child.setVisible(False)
+             
+            toggle_name = toggle_group.name().strip()[1:]
+            for child in toggle_group.childNodes():
+                child.setVisible(True)
+                
+                n = join_filename([prefix, node_name, toggle_name + child.name().strip()])     
+                file = create_filename(n, i)
+                export_node(node, file, node.name() + child.name())
+
+
 
 if node:
     folder = QFileDialog.getExistingDirectory()
     if folder:
-        #fps = doc.framesPerSecond()
-        #images = []
-
         name = node.name()
         start = doc.playBackStartTime()
         end = doc.playBackEndTime() + 1
@@ -63,11 +105,6 @@ if node:
         print("Exporting {} frames".format(length))
 
         for i in range(start, end):
-            #print("Exporting frame {}".format(i))
             doc.setCurrentTime(i)
             doc.waitForDone()
             export(node, i)
-
-            #images.append(imageio.imread(file))
-        #final_file = '{}/{}.gif'.format(folder, node.name())
-        #imageio.mimsave(final_file, images, 'GIF', fps=fps)
