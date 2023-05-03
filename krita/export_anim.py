@@ -42,6 +42,9 @@ def export(node, i, prefix = ""):
 
         name = prefix + node.name()
         file = '{}/{}_{}.png'.format(folder, name, i)
+        
+        if not has_keyframe_at(node, i + 1):
+            file = '{}/{}.png'.format(folder, name)
 
         actual_rect = node.bounds() if rect is None else rect
         node.save(file, doc.xRes(), doc.yRes(), info, actual_rect)
