@@ -1,12 +1,11 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from krita import InfoObject
-import imageio
 
 ignore_start = "_" # ignore
 group_start = ">" # export each child of the group
 skip_group_name_end = "<" # don't add the group name to the prefix if name is ">GROUP<"
-child_toggle_start = "@" # the parent will be exported with each child toggled
+child_toggle_start = "@" # the parent will be exported with each child inside this group toggled
 
 filename_sep = "_"
 
