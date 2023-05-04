@@ -18,16 +18,22 @@ class Exporter(DockWidget):
         mainWidget.setLayout(QVBoxLayout())
         self.setWidget(mainWidget)
 
+        formWidget = QWidget(mainWidget)
         form = QFormLayout()
-        self.file_separator = QLineEdit(self.endpoint_widget)
+
+        self.file_separator = QLineEdit(formWidget)
         form.addRow("File separator", self.file_separator)
+
+        formWidget.setLayout(form)
+        mainWidget.layout().addWidget(formWidget)
 
         exportBtn = QPushButton("Export", mainWidget)
         exportBtn.clicked.connect(self.exportDocument)
         mainWidget.layout().addWidget(exportBtn)
 
-        self.loadPreferences()
-        Krita.instance().notifier().applicationClosing.connect(self.savePreferences)
+        notifier = Krita.instance().notifier()
+        notifier.imageCreated.connect(self.loadPreferences)
+        notifier.applicationClosing.connect(self.savePreferences)
     
     @pyqtSlot()
     def savePreferences(self):
@@ -36,6 +42,7 @@ class Exporter(DockWidget):
         doc.setAnnotation(annotation_key, "Settings for the exporter plugin", QByteArray(data.encode()))
         print('Saved preferences', data)
 
+    @pyqtSlot()
     def loadPreferences(self):
         doc = Krita.instance().activeDocument()
         bytes = doc.annotation(annotation_key)
@@ -88,7 +95,7 @@ class Exporter(DockWidget):
                 #print("No keyframe at {} for {}".format(i, node_name))
                 return
             
-            toggle_group = self.get_toggle_group_child()
+            toggle_group = self.get_toggle_group_child(node)
             if toggle_group == None:
                 parts = [prefix + node_name]
                 if i != 0 or self.has_keyframe_at(node, i + 1):
@@ -100,17 +107,20 @@ class Exporter(DockWidget):
                 print("Start exporting toggle group for {}".format(prefix + node_name))
                 for child in toggle_group.childNodes():
                     child.setVisible(False)
+                self.doc.waitForDone()
                 
                 toggle_name = toggle_group.name().strip()[1:]
                 for child in toggle_group.childNodes():
                     child.setVisible(True)
+                    self.doc.refreshProjection()
                     
                     # TODO: support exporting frames?
-                    n = self.join_filename([prefix, node_name, toggle_name + child.name().strip()])     
+                    n = self.join_filename([prefix, node_name, toggle_name + child.name().strip()])
                     file = '{}/{}.png'.format(self.folder, n)
                     self.export_node(node, file)
                     print("Export layer {} at frame {}".format(node_name + child.name(), i))
-    
+                    child.setVisible(False)
+
     def get_toggle_group_child(self, node):
         if node.childNodes():
             for child in node.childNodes():
