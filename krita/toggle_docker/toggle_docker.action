@@ -1,0 +1,31 @@
+<ActionCollection version="2" name="Scripts">
+    <Actions category="Scripts">
+        <text>Toggle Dockers</text>
+
+        <Action name="toggle_docker_animation">
+            <text>Toggle Docker Animation</text>
+            <icon></icon>
+            <whatsThis></whatsThis>
+            <toolTip></toolTip>
+            <iconText></iconText>
+            <activationFlags>0</activationFlags>
+            <activationConditions>0</activationConditions>
+            <shortcut>ctrl+shift+4</shortcut>
+            <isCheckable>false</isCheckable>
+            <statusTip></statusTip>
+        </Action>
+
+        <Action name="toggle_docker_exporter">
+            <text>Toggle Docker Exporter</text>
+            <icon></icon>
+            <whatsThis></whatsThis>
+            <toolTip></toolTip>
+            <iconText></iconText>
+            <activationFlags>0</activationFlags>
+            <activationConditions>0</activationConditions>
+            <shortcut>ctrl+shift+5</shortcut>
+            <isCheckable>false</isCheckable>
+            <statusTip></statusTip>
+        </Action>
+    </Actions>
+</ActionCollection>
