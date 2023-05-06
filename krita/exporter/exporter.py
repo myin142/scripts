@@ -7,6 +7,7 @@ group_start = ">" # export each child of the group
 skip_group_name_end = "<" # don't add the group name to the prefix if name is ">GROUP<"
 child_toggle_start = "@" # the parent will be exported with each child inside this group toggled
 skip_animation_start = "#" # skip this layer for checking if animation frame exist
+mask_name = "_mask" # using mask size for export
 
 annotation_key = "myin_exporter_pref"
 
@@ -63,7 +64,7 @@ class Exporter(DockWidget):
         sel = doc.selection()
         node = doc.activeNode()
 
-        self.rect = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else None
+        self.sel = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else None
         self.doc = doc
 
         if node:
@@ -98,12 +99,14 @@ class Exporter(DockWidget):
                 return
             
             toggle_group = self.get_toggle_group_child(node)
+            export_rect = self.get_export_rect(node)
+
             if toggle_group == None:
                 parts = [prefix + node_name]
                 if i != 0 or self.has_keyframe_at(node, i + 1):
                     parts.append(i)
                 file = '{}/{}.png'.format(self.folder, self.join_filename(parts))
-                self.export_node(node, file)
+                self.export_node(export_rect, node, file)
                 print("Export layer {} at frame {}".format(node_name, i))
             else:
                 print("Start exporting toggle group for {}".format(prefix + node_name))
@@ -119,7 +122,7 @@ class Exporter(DockWidget):
                     # TODO: support exporting frames?
                     n = self.join_filename([prefix, node_name, toggle_name + child.name().strip()])
                     file = '{}/{}.png'.format(self.folder, n)
-                    self.export_node(node, file)
+                    self.export_node(export_rect, node, file)
                     print("Export layer {} at frame {}".format(node_name + child.name(), i))
                     child.setVisible(False)
 
@@ -128,6 +131,26 @@ class Exporter(DockWidget):
             for child in node.childNodes():
                 if child.visible() and child.childNodes() and child.name().strip().startswith(child_toggle_start):
                     return child
+        return None
+
+    def get_export_rect(self, node):
+        mask = self.find_mask_sibling(node)
+        export_rect = self.sel
+        if export_rect == None:
+            if mask == None:
+                export_rect = node.bounds()
+            else:
+                export_rect = mask.bounds()
+        return export_rect
+
+    def find_mask_sibling(self, node):
+        parent = node.parentNode()
+        if parent:
+            for sibling in parent.childNodes():
+                if sibling == node: continue
+
+                if sibling.name().strip() == mask_name:
+                    return sibling
         return None
 
     def has_keyframe_at(self, node, frame):
@@ -143,9 +166,8 @@ class Exporter(DockWidget):
             else:
                 return frame == 0 and node.hasExtents()
 
-    def export_node(self, node, filename):
-        actual_rect = node.bounds() if self.rect is None else self.rect
-        node.save(filename, self.doc.xRes(), self.doc.yRes(), InfoObject(), actual_rect)
+    def export_node(self, rect, node, filename):
+        node.save(filename, self.doc.xRes(), self.doc.yRes(), InfoObject(), rect)
         
     def join_filename(self, names):
         result = ""
