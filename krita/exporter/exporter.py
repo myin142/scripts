@@ -6,6 +6,7 @@ ignore_start = "_" # ignore
 group_start = ">" # export each child of the group
 skip_group_name_end = "<" # don't add the group name to the prefix if name is ">GROUP<"
 child_toggle_start = "@" # the parent will be exported with each child inside this group toggled
+skip_animation_start = "#" # skip this layer for checking if animation frame exist
 
 annotation_key = "myin_exporter_pref"
 
@@ -22,6 +23,7 @@ class Exporter(DockWidget):
         form = QFormLayout()
 
         self.file_separator = QLineEdit(formWidget)
+        self.file_separator.setText("_")
         form.addRow("File separator", self.file_separator)
 
         formWidget.setLayout(form)
@@ -136,7 +138,7 @@ class Exporter(DockWidget):
                     return True
             return False
         else:
-            if node.animated():
+            if node.animated() and not node.name().startswith(skip_animation_start):
                 return node.hasKeyframeAtTime(frame)
             else:
                 return frame == 0 and node.hasExtents()
@@ -148,7 +150,7 @@ class Exporter(DockWidget):
     def join_filename(self, names):
         result = ""
         for i in range(0, len(names)):
-            name = names[i].strip()
+            name = str(names[i]).strip()
             if name == "": continue
             result += name
             if i != len(names) - 1:
