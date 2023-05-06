@@ -46,6 +46,6 @@ Following files will be exported when running with `>HoloRam<` node selected and
 - `Ina_0.png`
 - `Ina_1.png`
 
-The profile files will include the `_bg` + each child of the `@` node.
+The profile files will include the `BG` + each child of the `@` node.
 
 The character `Ina` will have all frames exported using the bounds of `_mask`
