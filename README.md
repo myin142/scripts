@@ -11,7 +11,7 @@ Scripts:
 
 Plugins:
 
-- `toggle_docker` - toggle dockers with shortcuts, since you can't switch workspaces with shortcuts...
+- `toggle_docker` - toggle dockers/actions with shortcuts, since you can't switch workspaces with shortcuts...
   - add new actions for every docker in `createActions` and `toggle_docker.actions`
 
 ### Exporter
