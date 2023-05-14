@@ -134,7 +134,7 @@ class Exporter(DockWidget):
         return None
 
     def get_export_rect(self, node):
-        mask = self.find_mask_sibling(node)
+        mask = self.find_mask(node)
         export_rect = self.sel
         if export_rect == None:
             if mask == None:
@@ -143,7 +143,12 @@ class Exporter(DockWidget):
                 export_rect = mask.bounds()
         return export_rect
 
-    def find_mask_sibling(self, node):
+    def find_mask(self, node):
+        if node.childNodes():
+            for child in node.childNodes():
+                if child.name().strip() == mask_name:
+                    return child
+
         parent = node.parentNode()
         if parent:
             for sibling in parent.childNodes():
