@@ -136,7 +136,8 @@ class Exporter(DockWidget):
 
     def get_export_rect(self, node):
         mask = self.find_mask(node)
-        mask.setVisible(False)
+        if mask != None:
+            mask.setVisible(False)
         export_rect = self.sel
         if export_rect == None:
             if mask == None:
