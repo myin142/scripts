@@ -106,6 +106,7 @@ class Exporter(DockWidget):
                 if i != 0 or self.has_keyframe_at(node, i + 1):
                     parts.append(i)
                 file = '{}/{}.png'.format(self.folder, self.join_filename(parts))
+                self.doc.refreshProjection()
                 self.export_node(export_rect, node, file)
                 print("Export layer {} at frame {}".format(node_name, i))
             else:
@@ -135,6 +136,7 @@ class Exporter(DockWidget):
 
     def get_export_rect(self, node):
         mask = self.find_mask(node)
+        mask.setVisible(False)
         export_rect = self.sel
         if export_rect == None:
             if mask == None:
