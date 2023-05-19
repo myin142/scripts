@@ -90,7 +90,6 @@ class Exporter(DockWidget):
                 new_prefix = prefix
                 if not node_name.endswith(skip_group_name_end):
                     new_prefix += node_name[1:].strip()
-                if new_prefix != "":
                     new_prefix += self.file_sep()
                 self.export(child, i, new_prefix)
         elif not node_name.startswith(ignore_start):
@@ -100,6 +99,11 @@ class Exporter(DockWidget):
             
             toggle_group = self.get_toggle_group_child(node)
             export_rect = self.get_export_rect(node)
+
+            # Remove seperator if node name is empty
+            if node_name == "":
+                count = len(self.file_sep()) * -1
+                prefix = prefix[:count]
 
             if toggle_group == None:
                 parts = [prefix + node_name]
