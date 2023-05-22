@@ -40,5 +40,18 @@
             <isCheckable>false</isCheckable>
             <statusTip></statusTip>
         </Action>
+
+        <Action name="remove_anim">
+            <text>Remove Animation Flag</text>
+            <icon></icon>
+            <whatsThis></whatsThis>
+            <toolTip></toolTip>
+            <iconText></iconText>
+            <activationFlags>0</activationFlags>
+            <activationConditions>0</activationConditions>
+            <shortcut>ctrl+shift+7</shortcut>
+            <isCheckable>false</isCheckable>
+            <statusTip></statusTip>
+        </Action>
     </Actions>
 </ActionCollection>

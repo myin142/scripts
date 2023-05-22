@@ -29,6 +29,23 @@ class ToggleDockerExtension(Extension):
         grayscale = window.createAction("toggle_grayscale", "Toggle Grayscale")
         grayscale.triggered.connect(self.toggle_grayscale)
 
+        # There is no way to remove animation false once it is set
+        remove_anim = window.createAction("remove_anim", "Remove Animation Flag")
+        remove_anim.triggered.connect(self.remove_anim)
+
+    def remove_anim(self):
+        doc = Krita.instance().activeDocument()
+        active = doc.activeNode()
+        if active.animated():
+            b = active.bounds()
+            data = active.pixelData(b.x(), b.y(), b.width(), b.height())
+            node = doc.createNode(active.name(), active.type())
+            node.setPixelData(data, b.x(), b.y(), b.width(), b.height())
+
+            parent = active.parentNode()
+            parent.addChildNode(node, active)
+            active.remove()
+
     def toggle_anim(self):
         self.toggle_docker("Animation Timeline")
 
