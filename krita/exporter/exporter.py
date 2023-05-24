@@ -27,6 +27,9 @@ class Exporter(DockWidget):
         self.file_separator.setText("_")
         form.addRow("File separator", self.file_separator)
 
+        self.skip_single_frame_number = QCheckBox()
+        form.addRow("Skip single frame number", self.skip_single_frame_number)
+
         formWidget.setLayout(form)
         mainWidget.layout().addWidget(formWidget)
 
@@ -37,7 +40,7 @@ class Exporter(DockWidget):
         notifier = Krita.instance().notifier()
         notifier.imageCreated.connect(self.loadPreferences)
         notifier.applicationClosing.connect(self.savePreferences)
-    
+
     @pyqtSlot()
     def savePreferences(self):
         doc = Krita.instance().activeDocument()
@@ -58,7 +61,7 @@ class Exporter(DockWidget):
 
     def file_sep(self):
         return self.file_separator.text()
-    
+
     def exportDocument(self):
         doc = Krita.instance().activeDocument()
         sel = doc.selection()
@@ -84,7 +87,7 @@ class Exporter(DockWidget):
         node_name = node.name().strip()
         if not node.visible():
             return
-        
+
         if node_name.startswith(group_start):
             for child in node.childNodes():
                 new_prefix = prefix
@@ -94,11 +97,15 @@ class Exporter(DockWidget):
                 self.export(child, i, new_prefix)
         elif not node_name.startswith(ignore_start):
             if not self.has_keyframe_at(node, i):
-                #print("No keyframe at {} for {}".format(i, node_name))
                 return
-            
-            toggle_group = self.get_toggle_group_child(node)
-            export_rect = self.get_export_rect(node)
+
+            toggle_group, mask = self.collect_info(node)
+
+            if mask != None and mask.visible():
+                mask.setVisible(False)
+                self.doc.refreshProjection()
+
+            export_rect = self.get_export_rect(node, mask)
 
             # Remove seperator if node name is empty
             if node_name == "":
@@ -107,10 +114,9 @@ class Exporter(DockWidget):
 
             if toggle_group == None:
                 parts = [prefix + node_name]
-                if i != 0 or self.has_keyframe_at(node, i + 1):
+                if i != 0 or not self.skip_single_frame_number.isChecked() or self.has_keyframe_at(node, i + 1):
                     parts.append(i)
                 file = '{}/{}.png'.format(self.folder, self.join_filename(parts))
-                self.doc.refreshProjection()
                 self.export_node(export_rect, node, file)
                 print("Export layer {} at frame {}".format(node_name, i))
             else:
@@ -118,12 +124,12 @@ class Exporter(DockWidget):
                 for child in toggle_group.childNodes():
                     child.setVisible(False)
                 self.doc.waitForDone()
-                
+
                 toggle_name = toggle_group.name().strip()[1:]
                 for child in toggle_group.childNodes():
                     child.setVisible(True)
-                    self.doc.refreshProjection()
-                    
+                    self.doc.refreshProjection() # this is costly
+
                     # TODO: support exporting frames?
                     n = self.join_filename([prefix, node_name, toggle_name + child.name().strip()])
                     file = '{}/{}.png'.format(self.folder, n)
@@ -131,17 +137,34 @@ class Exporter(DockWidget):
                     print("Export layer {} at frame {}".format(node_name + child.name(), i))
                     child.setVisible(False)
 
-    def get_toggle_group_child(self, node):
+    def collect_info(self, node):
+        toggle_group = None
+        mask = None
+
+        # Hopefully we can save some time if we combine the first iteration of child nodes
         if node.childNodes():
             for child in node.childNodes():
-                if child.visible() and child.childNodes() and child.name().strip().startswith(child_toggle_start):
-                    return child
-        return None
+                name = child.name().strip()
 
-    def get_export_rect(self, node):
-        mask = self.find_mask(node)
-        if mask != None:
-            mask.setVisible(False)
+                if toggle_group == None and child.visible() and child.childNodes() and name.startswith(child_toggle_start):
+                    toggle_group = child
+
+                if mask == None and name == mask_name:
+                    mask = child
+
+        if mask == None:
+            parent = node.parentNode()
+            if parent:
+                for sibling in parent.childNodes():
+                    if sibling == node: continue
+
+                    if sibling.name().strip() == mask_name:
+                        mask = sibling
+                        break
+
+        return toggle_group, mask
+
+    def get_export_rect(self, node, mask):
         export_rect = self.sel
         if export_rect == None:
             if mask == None:
@@ -149,21 +172,6 @@ class Exporter(DockWidget):
             else:
                 export_rect = mask.bounds()
         return export_rect
-
-    def find_mask(self, node):
-        if node.childNodes():
-            for child in node.childNodes():
-                if child.name().strip() == mask_name:
-                    return child
-
-        parent = node.parentNode()
-        if parent:
-            for sibling in parent.childNodes():
-                if sibling == node: continue
-
-                if sibling.name().strip() == mask_name:
-                    return sibling
-        return None
 
     def has_keyframe_at(self, node, frame):
         children = node.childNodes()
