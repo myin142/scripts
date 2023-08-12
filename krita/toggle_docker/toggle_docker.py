@@ -48,6 +48,7 @@ class ToggleDockerExtension(Extension):
 
     def toggle_anim(self):
         self.toggle_docker("Animation Timeline")
+        self.toggle_docker("アニメーションタイムライン")
 
     def toggle_exporter(self):
         self.toggle_docker("Exporter")
