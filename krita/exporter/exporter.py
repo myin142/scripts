@@ -83,6 +83,9 @@ class Exporter(DockWidget):
                     doc.waitForDone()
                     self.export(node, i)
 
+                    if self.skip_single_frame_number.isChecked():
+                        break
+
     def export(self, node, i, prefix = ""):
         node_name = node.name().strip()
         if not node.visible():
@@ -114,7 +117,7 @@ class Exporter(DockWidget):
 
             if toggle_group == None:
                 parts = [prefix + node_name]
-                if i != 0 or not self.skip_single_frame_number.isChecked() or self.has_keyframe_at(node, i + 1):
+                if i != 0 or not self.skip_single_frame_number.isChecked(): #or self.has_keyframe_at(node, i + 1):
                     parts.append(i)
                 file = '{}/{}.png'.format(self.folder, self.join_filename(parts))
                 self.export_node(export_rect, node, file)
@@ -189,7 +192,7 @@ class Exporter(DockWidget):
 
     def export_node(self, rect, node, filename):
         node.save(filename, self.doc.xRes(), self.doc.yRes(), InfoObject(), rect)
-        
+
     def join_filename(self, names):
         result = ""
         for i in range(0, len(names)):
