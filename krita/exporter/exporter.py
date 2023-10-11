@@ -176,9 +176,10 @@ class Exporter(DockWidget):
     def has_keyframe_at(self, node, frame):
         children = node.childNodes()
         if children:
-            for child in children:
-                if self.has_keyframe_at(child, frame):
-                    return True
+            if not node.name().startswith(skip_animation_start):
+                for child in children:
+                    if self.has_keyframe_at(child, frame):
+                        return True
             return False
         else:
             if node.animated() and not node.name().startswith(skip_animation_start):
