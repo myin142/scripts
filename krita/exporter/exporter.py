@@ -133,11 +133,10 @@ class Exporter(DockWidget):
                     child.setVisible(True)
                     self.doc.refreshProjection() # this is costly
 
-                    # TODO: support exporting frames?
-                    n = self.join_filename([prefix, node_name, toggle_name + child.name().strip()])
+                    n = self.join_filename([prefix, node_name, toggle_name + child.name().strip(), i])
                     file = '{}/{}.png'.format(self.folder, n)
                     self.export_node(export_rect, node, file)
-                    print("Export layer {} at frame {}".format(node_name + child.name(), i))
+                    print("Export toggle group layer {} at frame {}".format(n, i))
                     child.setVisible(False)
 
     def collect_info(self, node):
