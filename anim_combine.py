@@ -23,7 +23,7 @@ OUTPUT = shared.output_dir(__file__)
 GROUPS = shared.group_sprites(DIR, PREFIXES)
 
 for key in GROUPS:
-    new_img = shared.merge_images(GROUPS[key])
+    new_img = shared.simple_merge(GROUPS[key])
 
     name = key.replace("_", "")
     file_name = f'{name}.png'

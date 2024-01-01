@@ -73,6 +73,19 @@ def find_starting_prefix(name, prefixes):
     return None
 
 
+def simple_merge(images):
+    imgs = [Image.open(i) for i in images if i.endswith('.png')]
+    widths, heights = zip(*(i.size for i in imgs))
+    total_width = sum(widths)
+    max_height = max(heights)
+
+    new_im = Image.new('RGBA', (total_width, max_height))
+    x_offset = 0
+    for im in imgs:
+        new_im.paste(im, (x_offset, 0))
+        x_offset += im.width
+    return new_im
+
 # images should be the same sizes if merging with multiple rows
 def merge_images(images, max_columns=-1, use_max_sizes=False, gap=0):
     imgs = [Image.open(i) for i in images if i.endswith('.png')]

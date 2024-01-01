@@ -30,6 +30,9 @@ class Exporter(DockWidget):
         self.skip_single_frame_number = QCheckBox()
         form.addRow("Skip single frame number", self.skip_single_frame_number)
 
+        self.include_empty = QCheckBox()
+        form.addRow("Include empty frames", self.include_empty)
+
         formWidget.setLayout(form)
         mainWidget.layout().addWidget(formWidget)
 
@@ -99,7 +102,7 @@ class Exporter(DockWidget):
                     new_prefix += self.file_sep()
                 self.export(child, i, new_prefix)
         elif not node_name.startswith(ignore_start):
-            if not self.has_keyframe_at(node, i):
+            if not self.has_keyframe_at(node, i) and not self.include_empty.isChecked():
                 return
 
             toggle_group, mask = self.collect_info(node)
@@ -118,7 +121,7 @@ class Exporter(DockWidget):
             if toggle_group == None:
                 parts = [prefix + node_name]
                 if i != 0 or not self.skip_single_frame_number.isChecked(): #or self.has_keyframe_at(node, i + 1):
-                    parts.append(i)
+                    parts.append(self.prefixed(i))
                 file = '{}/{}.png'.format(self.folder, self.join_filename(parts))
                 self.export_node(export_rect, node, file)
                 print("Export layer {} at frame {}".format(node_name, i))
@@ -133,11 +136,17 @@ class Exporter(DockWidget):
                     child.setVisible(True)
                     self.doc.refreshProjection() # this is costly
 
-                    n = self.join_filename([prefix, node_name, toggle_name + child.name().strip(), i])
+                    n = self.join_filename([prefix, node_name, toggle_name + child.name().strip(), self.prefixed(i)])
                     file = '{}/{}.png'.format(self.folder, n)
                     self.export_node(export_rect, node, file)
                     print("Export toggle group layer {} at frame {}".format(n, i))
                     child.setVisible(False)
+    
+    def prefixed(self, i: int):
+        x = str(i)
+        if i < 10:
+            x = "0" + x
+        return "0" + x
 
     def collect_info(self, node):
         toggle_group = None

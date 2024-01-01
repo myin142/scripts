@@ -8,9 +8,9 @@ from PIL import Image
 parser = argparse.ArgumentParser(
     description='splits a spritesheet into individual sprites. Sprites have to be the same size')
 parser.add_argument('-f', '--file', required=True, help='spritesheet file')
-parser.add_argument('-s', '--size', required=True,
-                    help='number of columns and rows (e.g 30x20)')
+parser.add_argument('-s', '--size', help='number of columns and rows (e.g 30x20)')
 parser.add_argument('-g', '--gap', help='gap between column and rows in pixel')
+parser.add_argument('--sprite-size', help='e.g 32x32')
 parser.add_argument('--prefix', help='Prefix of file names', default='sprite')
 parser.add_argument('--output-same-dir', default=False, action='store_true')
 parser.add_argument('--start-index', type=int, default=0)
@@ -20,24 +20,38 @@ args = parser.parse_args()
 FILE = args.file
 shared.exit_if_not_found(FILE)
 
-SIZES = args.size.split('x')
-if len(SIZES) != 2:
+SIZES = args.size.split('x') if args.size else []
+SPRITE_SIZES = args.sprite_size.split('x') if args.sprite_size else []
+if len(SIZES) != 2 and len(SPRITE_SIZES) != 2:
     print('Invalid size')
     exit()
-
-col = int(SIZES[0])
-row = int(SIZES[1])
 
 OUTPUT = shared.output_dir(__file__)
 if args.output_same_dir:
     full_file_path = os.path.realpath(FILE)
     OUTPUT = os.path.dirname(full_file_path)
 
-print('Size {}x{}'.format(col, row))
-
 img = Image.open(FILE)
+print('Image Size {}x{}'.format(img.width, img.height))
 
-print('Image Size {}x{}'.format(img.size[0], img.size[1]))
+if len(SIZES) > 0:
+    col = int(SIZES[0])
+    row = int(SIZES[1])
+    print('Size {}x{}'.format(col, row))
+else:
+    sprite_x = int(SPRITE_SIZES[0])
+    sprite_y = int(SPRITE_SIZES[1])
+
+    if img.width % sprite_x != 0:
+        print("Width not divisible")
+        exit()
+    if img.height % sprite_y != 0:
+        print("Height not divisible")
+        exit()
+
+    col = int(img.width / sprite_x)
+    row = int(img.height / sprite_y)
+    print('Sprite Size {}x{}'.format(col, row))
 
 GAP = args.gap
 ROW_GAP = 0
@@ -50,8 +64,8 @@ if GAP is not None:
     print('Gap size {}x{} with a gap of {} pixel'.format(
         COL_GAP, ROW_GAP, gap_pixel))
 
-WIDTH = (img.size[0] - COL_GAP) / col
-HEIGHT = (img.size[1] - ROW_GAP) / row
+WIDTH = (img.width - COL_GAP) / col
+HEIGHT = (img.height - ROW_GAP) / row
 
 
 if not WIDTH.is_integer():
