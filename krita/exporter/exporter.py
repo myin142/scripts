@@ -33,6 +33,9 @@ class Exporter(DockWidget):
         self.include_empty = QCheckBox()
         form.addRow("Include empty frames", self.include_empty)
 
+        self.hide_mask = QCheckBox()
+        form.addRow("Hide mask layer", self.hide_mask)
+
         formWidget.setLayout(form)
         mainWidget.layout().addWidget(formWidget)
 
@@ -107,7 +110,7 @@ class Exporter(DockWidget):
 
             toggle_group, mask = self.collect_info(node)
 
-            if mask != None and mask.visible():
+            if mask != None and mask.visible() and self.hide_mask.isChecked():
                 mask.setVisible(False)
                 self.doc.refreshProjection()
 
