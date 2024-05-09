@@ -2,12 +2,33 @@ import json
 import re 
 import requests 
 from bs4 import BeautifulSoup 
-import os.path
+import os.path, os
+from dotenv import load_dotenv
+import base64
 
 PATH = "holo_originals.html"
-OUTPUT = "holo_originals.json"
+OUTPUT = "holo_originals.txt"
 URL = "https://seesaawiki.jp/hololivetv/d/%a5%aa%a5%ea%a5%b8%a5%ca%a5%eb%a5%bd%a5%f3%a5%b0"
 # URL = "https://seesaawiki.jp/hololivetv/d/%a5%aa%a5%ea%a5%b8%a5%ca%a5%eb%a5%bd%a5%f3%a5%b0"
+
+def get_spotify_token():
+    load_dotenv()
+    client_id = os.getenv("CLIENT_ID")
+    client_secret = os.getenv("CLIENT_SECRET")
+
+    auth_string = f'{client_id}:{client_secret}'.encode('utf-8')
+    auth_base64 = str(base64.b64encode(auth_string), 'utf-8')
+
+    url = "https://accounts.spotify.com/api/token"
+    headers = {
+        "Authorization": f"Basic {auth_base64}",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = {"grant_type": "client_credentials"}
+
+    res = requests.post(url, data=data, headers=headers)
+    json_res = json.loads(res.content)
+    return json_res['access_token']
   
 def load_content():
     r = requests.get(URL) 
@@ -18,56 +39,77 @@ def load_content():
 if not os.path.isfile(PATH):
     load_content()
 
-data = {}
-count = 0
+# token = get_spotify_token()
+# print(token)
 
-multiple = []
-  
-with open(PATH, "r") as file:
-    soup = BeautifulSoup(file.read(), 'html.parser') 
-    table = soup.find("table", {"id": "content_block_14"})
-    rows = table.find_all("tr")
-    print(f'Found {len(rows)} items')
+def create_data():
+    data = {}
+    count = 0
 
-    for row in rows:
-        cols = row.find_all("td")
-        if len(cols) == 0: continue
+    multiple = []
+    
+    with open(PATH, "r") as file:
+        soup = BeautifulSoup(file.read(), 'html.parser') 
+        table = soup.find("table", {"id": "content_block_14"})
+        rows = table.find_all("tr")
+        print(f'Found {len(rows)} items')
 
-        date = cols[0].text.strip()
-        names = [n.strip() for n in cols[1].text.split(',')]
-        song = cols[2].text
+        for row in rows:
+            cols = row.find_all("td")
+            if len(cols) == 0: continue
 
-        link = cols[2].find("img")['src']
-        match = re.search("vi/([a-zA-Z0-9_-]+)", link)
-        if match == None:
-            print(f"No match found for {song}: {link}")
+            date = cols[0].text.strip()
+            full_name = cols[1].text
+            names = [n.strip() for n in full_name.split(',')]
+            song = cols[2].text
 
-        id = match.groups()[0] if match != None else ""
+            if 'remix' in song.lower() or 'ver.' in song.lower() or 'Renovation' in song:
+                continue
 
-        if len(names) > 1:
-            multiple.append(names)
-            # print(f"Skipping multiple members for now. {names}")
-            continue
+            link = cols[2].find("img")['src']
+            match = re.search("vi/([a-zA-Z0-9_-]+)", link)
+            if match == None:
+                print(f"No match found for {song}: {link}")
 
-        name = ','.join(names) #.replace('’', '').replace('\'', '')
-        if not name in data:
-            data[name] = []
+            id = match.groups()[0] if match != None else ""
 
-        data[name].append({"song": song, "date": date, "id": id})
+            if len(names) > 1:
+                if 'FUWAMOCO' in full_name:
+                    names = ['FUWAMOCO']
+                else:
+                    multiple.append(names)
+                    # print(f"Skipping multiple members for now. {names}")
+                    continue
 
-        # count += 1
-        # if count > 22:
-        #     break
+            name = ','.join(names) #.replace('’', '').replace('\'', '')
+            name = name.split('/')[0]
+            name = name.replace('Pavolla', 'Pavolia')
 
-print(f'In total {len(data)} members')
-for name in data:
-    print(f'{name} has {len(data[name])} songs')
+            if not name in data:
+                data[name] = []
 
-for s in data['博衣こより']:
-    print(s)
+            data[name].append({"song": song, "date": date, "id": id})
 
-with open(OUTPUT, 'w') as out:
-    json.dump(data, out)
+            # count += 1
+            # if count > 22:
+            #     break
 
-# for n in multiple:
-#     print(n)
+    print(f'In total {len(data)} members')
+    for name in data:
+        print(f'{name} has {len(data[name])} songs')
+
+    # for n in multiple:
+    #     print(n)
+
+    with open(OUTPUT, 'w') as out:
+        for name in data:
+            out.write(f'--{name}\n')
+            for x in data[name]:
+                out.write(f'{x["date"]};{x["song"]};{x["id"]}\n')
+            out.write('\n')
+    
+    # with open('holo_names.txt', 'w') as names:
+    #     for name in data:
+    #         names.write(f'{name}\n')
+
+create_data()

@@ -5,3 +5,5 @@ output.*
 *.txt
 *.json
 *.html
+*.csv
+.env
