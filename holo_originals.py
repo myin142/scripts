@@ -5,9 +5,12 @@ from bs4 import BeautifulSoup
 import os.path, os
 from dotenv import load_dotenv
 import base64
+import subprocess
+import yt_dlp
+import time
 
 PATH = "holo_originals.html"
-OUTPUT = "holo_originals.txt"
+OUTPUT = 'output/holo_originals'
 URL = "https://seesaawiki.jp/hololivetv/d/%a5%aa%a5%ea%a5%b8%a5%ca%a5%eb%a5%bd%a5%f3%a5%b0"
 # URL = "https://seesaawiki.jp/hololivetv/d/%a5%aa%a5%ea%a5%b8%a5%ca%a5%eb%a5%bd%a5%f3%a5%b0"
 
@@ -39,6 +42,8 @@ def load_content():
 if not os.path.isfile(PATH):
     load_content()
 
+if not os.path.isdir(OUTPUT):
+    os.mkdir(OUTPUT)
 # token = get_spotify_token()
 # print(token)
 
@@ -95,21 +100,50 @@ def create_data():
             #     break
 
     print(f'In total {len(data)} members')
+    # for name in data:
+    #     print(f'{name} has {len(data[name])} songs')
+
+    # start_id = 'k1woGOREGqc'
+    # starting = False
     for name in data:
-        print(f'{name} has {len(data[name])} songs')
+        for song in data[name]:
+            id = song["id"]
+            if id:
+                # process = subprocess.Popen(['yt-dlp', '--output', f'{OUTPUT}/{id}.%(ext)s', '--format', 'bestaudio/best', '--add-metadata', '--', f'{id}'], shell=True, stdout=subprocess.PIPE)
+                # process.wait()
+                # print(f'Download of {id} video exited with {process.returncode}')
 
-    # for n in multiple:
-    #     print(n)
+                # if id == start_id:
+                #     starting = True
 
-    with open(OUTPUT, 'w') as out:
-        for name in data:
-            out.write(f'--{name}\n')
-            for x in data[name]:
-                out.write(f'{x["date"]};{x["song"]};{x["id"]}\n')
-            out.write('\n')
+                # if not starting:
+                #     continue
+
+                try:
+                    with yt_dlp.YoutubeDL({'outtmpl': f'{OUTPUT}/{id}.%(ext)s', 'format': 'bestaudio/best'}) as ydl:
+                        ydl.download(id)
+                except:
+                    print(f'Failed to download video {id}')
+
+                time.sleep(1)
+
+    # with open("holo_originals.txt", 'w') as out:
+    #     for name in data:
+    #         out.write(f'--{name}\n')
+    #         for x in data[name]:
+    #             out.write(f'{x["date"]};{x["song"]};{x["id"]}\n')
+    #         out.write('\n')
     
     # with open('holo_names.txt', 'w') as names:
     #     for name in data:
     #         names.write(f'{name}\n')
 
-create_data()
+# create_data()
+
+if not os.path.exists(f'{OUTPUT}/ogg'):
+    os.mkdir(f'{OUTPUT}/ogg')
+for file in os.listdir(OUTPUT):
+    file_name = file.split('.')
+    proc = subprocess.Popen(['ffmpeg', '-i', f'{OUTPUT}/{file}', '-vn', '-acodec', 'libvorbis', f'{OUTPUT}/ogg/{file_name[0]}.ogg'])
+    proc.wait()
+    print(f'File {file} has been converted: {proc.returncode}')
