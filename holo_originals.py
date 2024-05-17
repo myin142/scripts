@@ -55,28 +55,76 @@ def create_data():
     
     with open(PATH, "r") as file:
         soup = BeautifulSoup(file.read(), 'html.parser') 
-        table = soup.find("table", {"id": "content_block_14"})
-        rows = table.find_all("tr")
-        print(f'Found {len(rows)} items')
+        # table = soup.find("table", {"id": "content_block_14"})
+        # rows = table.find_all("tr")
+
+        container = soup.find("div", {"class": "user-area"})
+        rows = container.find_all("div", {"class": "wiki-section-3"})
 
         for row in rows:
-            cols = row.find_all("td")
-            if len(cols) == 0: continue
+            # cols = row.find_all("td")
+            # if len(cols) == 0: continue
 
-            date = cols[0].text.strip()
-            full_name = cols[1].text
-            names = [n.strip() for n in full_name.split(',')]
-            song = cols[2].text
+            # date = cols[0].text.strip()
+            # full_name = cols[1].text
+            # names = [n.strip() for n in full_name.split(',')]
+            # song = cols[2].text
+
+            # link = cols[2].find("img")['src']
+            # match = re.search("vi/([a-zA-Z0-9_-]+)", link)
+            # if match == None:
+            #     print(f"No match found for {song}: {link}")
+
+            # id = match.groups()[0] if match != None else ""
+
+            date = ""
+            full_name = ""
+            names = []
+            song = row.find("h5").text.strip()
+            id = ""
+
+            body = row.find("div", {"class": "wiki-section-body-3"})
+            lines = body.text.split('\n')
+
+            for line in lines:
+                if '公開日' in line:
+                    parts = line.split('：')
+                    date = parts[1].strip()
+                elif 'メンバー' in line:
+                    parts = line.split('：')
+                    if len(parts) == 1:
+                        parts = line.split(':')
+
+                    full_name = parts[1].strip()
+                    for n in full_name.split(','):
+                        for x in n.split('、'):
+                            names.append(x.strip())
+            
+            links = [x for x in row.find_all("a") if 'youtube' in x.text.lower()]
+            if len(links) > 0:
+                a = [l for l in links if '(mv)' in l.text.lower()]
+                if len(a) == 0:
+                    a = links[0]
+                else:
+                    a = a[0]
+
+                link = a['href']
+                match = None
+                if 'watch?v=' in link:
+                    # https://www.youtube.com/watch?v=cU5_JIEFTOw
+                    match = re.search("v=([a-zA-Z0-9_-]+)", link)
+                elif 'tu.be' in link:
+                    # https://youtu.be/7WXVFl-N6-o
+                    # https://youtu.be/6rHKnVVp8QQ?si=JNOpnNyezv9nTPBV
+                    match = re.search("be/([a-zA-Z0-9_-]+)\\??", link)
+
+                if match == None:
+                    print(f"No match found for {song}: {a.text}, {link}")
+                else:
+                    id = match.groups()[0]
 
             if 'remix' in song.lower() or 'ver.' in song.lower() or 'Renovation' in song:
                 continue
-
-            link = cols[2].find("img")['src']
-            match = re.search("vi/([a-zA-Z0-9_-]+)", link)
-            if match == None:
-                print(f"No match found for {song}: {link}")
-
-            id = match.groups()[0] if match != None else ""
 
             if len(names) > 1:
                 if 'FUWAMOCO' in full_name:
@@ -89,6 +137,11 @@ def create_data():
             name = ','.join(names) #.replace('’', '').replace('\'', '')
             name = name.split('/')[0]
             name = name.replace('Pavolla', 'Pavolia')
+            name = name.replace('kanaeru', 'Kanaeru')
+            
+            match = re.search('\\(.*\\)', name)
+            if match != None:
+                continue
 
             if not name in data:
                 data[name] = []
@@ -103,22 +156,10 @@ def create_data():
     # for name in data:
     #     print(f'{name} has {len(data[name])} songs')
 
-    # start_id = 'k1woGOREGqc'
-    # starting = False
     for name in data:
         for song in data[name]:
             id = song["id"]
             if id:
-                # process = subprocess.Popen(['yt-dlp', '--output', f'{OUTPUT}/{id}.%(ext)s', '--format', 'bestaudio/best', '--add-metadata', '--', f'{id}'], shell=True, stdout=subprocess.PIPE)
-                # process.wait()
-                # print(f'Download of {id} video exited with {process.returncode}')
-
-                # if id == start_id:
-                #     starting = True
-
-                # if not starting:
-                #     continue
-
                 try:
                     with yt_dlp.YoutubeDL({'outtmpl': f'{OUTPUT}/{id}.%(ext)s', 'format': 'bestaudio/best'}) as ydl:
                         ydl.download(id)
@@ -135,15 +176,19 @@ def create_data():
     #         out.write('\n')
     
     # with open('holo_names.txt', 'w') as names:
-    #     for name in data:
+    #     for name in sorted(data.keys()):
     #         names.write(f'{name}\n')
 
 # create_data()
 
-if not os.path.exists(f'{OUTPUT}/ogg'):
-    os.mkdir(f'{OUTPUT}/ogg')
-for file in os.listdir(OUTPUT):
-    file_name = file.split('.')
-    proc = subprocess.Popen(['ffmpeg', '-i', f'{OUTPUT}/{file}', '-vn', '-acodec', 'libvorbis', f'{OUTPUT}/ogg/{file_name[0]}.ogg'])
-    proc.wait()
-    print(f'File {file} has been converted: {proc.returncode}')
+def to_ogg():
+    if not os.path.exists(f'{OUTPUT}/ogg'):
+        os.mkdir(f'{OUTPUT}/ogg')
+
+    for file in os.listdir(OUTPUT):
+        file_name = file.split('.')
+        proc = subprocess.Popen(['ffmpeg', '-i', f'{OUTPUT}/{file}', '-vn', '-acodec', 'libvorbis', f'{OUTPUT}/ogg/{file_name[0]}.ogg', '-n'])
+        proc.wait()
+        print(f'File {file} has been converted: {proc.returncode}')
+
+to_ogg()
