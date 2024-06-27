@@ -36,6 +36,9 @@ class Exporter(DockWidget):
         self.hide_mask = QCheckBox()
         form.addRow("Hide mask layer", self.hide_mask)
 
+        self.prefix_number = QCheckBox()
+        form.addRow("Prefix Number", self.prefix_number)
+
         formWidget.setLayout(form)
         mainWidget.layout().addWidget(formWidget)
 
@@ -75,6 +78,7 @@ class Exporter(DockWidget):
 
         self.sel = QRect(sel.x(), sel.y(), sel.width(), sel.height()) if sel else None
         self.doc = doc
+        self.num = 0
 
         if node:
             self.folder = QFileDialog.getExistingDirectory()
@@ -98,7 +102,7 @@ class Exporter(DockWidget):
             return
 
         if node_name.startswith(group_start):
-            for child in node.childNodes():
+            for child in reversed(node.childNodes()):
                 new_prefix = prefix
                 if not node_name.endswith(skip_group_name_end):
                     new_prefix += node_name[1:].strip()
@@ -121,11 +125,16 @@ class Exporter(DockWidget):
                 count = len(self.file_sep()) * -1
                 prefix = prefix[:count]
 
+            names = []
+            if self.prefix_number.isChecked():
+                names.append(str(self.num).zfill(2))
+                self.num += 1
+
             if toggle_group == None:
-                parts = [prefix + node_name]
+                names.append(prefix + node_name)
                 if i != 0 or not self.skip_single_frame_number.isChecked(): #or self.has_keyframe_at(node, i + 1):
-                    parts.append(self.prefixed(i))
-                file = '{}/{}.png'.format(self.folder, self.join_filename(parts))
+                    names.append(self.prefixed(i))
+                file = '{}/{}.png'.format(self.folder, self.join_filename(names))
                 self.export_node(export_rect, node, file)
                 print("Export layer {} at frame {}".format(node_name, i))
             else:
@@ -135,11 +144,14 @@ class Exporter(DockWidget):
                 self.doc.waitForDone()
 
                 toggle_name = toggle_group.name().strip()[1:]
-                for child in toggle_group.childNodes():
+                for child in reversed(toggle_group.childNodes()):
                     child.setVisible(True)
                     self.doc.refreshProjection() # this is costly
 
-                    n = self.join_filename([prefix, node_name, toggle_name + child.name().strip(), self.prefixed(i)])
+                    for x in [prefix, node_name, toggle_name + child.name().strip(), self.prefixed(i)]:
+                        names.append(x)
+
+                    n = self.join_filename(names)
                     file = '{}/{}.png'.format(self.folder, n)
                     self.export_node(export_rect, node, file)
                     print("Export toggle group layer {} at frame {}".format(n, i))
