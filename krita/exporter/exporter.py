@@ -60,13 +60,14 @@ class Exporter(DockWidget):
     @pyqtSlot()
     def loadPreferences(self):
         doc = Krita.instance().activeDocument()
-        bytes = doc.annotation(annotation_key)
+        if doc:
+            bytes = doc.annotation(annotation_key)
 
-        if bytes and not bytes.isEmpty():
-            data = bytes.toStdString()
-            print('Loading preferences', data)
+            if bytes and not bytes.isEmpty():
+                data = bytes.toStdString()
+                print('Loading preferences', data)
 
-            self.file_separator.setText(data)
+                self.file_separator.setText(data)
 
     def file_sep(self):
         return self.file_separator.text()
@@ -145,13 +146,18 @@ class Exporter(DockWidget):
 
                 toggle_name = toggle_group.name().strip()[1:]
                 for child in reversed(toggle_group.childNodes()):
+                    temp_names = names.copy()
                     child.setVisible(True)
                     self.doc.refreshProjection() # this is costly
 
-                    for x in [prefix, node_name, toggle_name + child.name().strip(), self.prefixed(i)]:
-                        names.append(x)
+                    temp_names.append(prefix + node_name)
+                    for x in [toggle_name + child.name().strip()]:
+                        temp_names.append(x)
 
-                    n = self.join_filename(names)
+                    if not self.skip_single_frame_number.isChecked():
+                        temp_names.append(self.prefixed(i))
+
+                    n = self.join_filename(temp_names)
                     file = '{}/{}.png'.format(self.folder, n)
                     self.export_node(export_rect, node, file)
                     print("Export toggle group layer {} at frame {}".format(n, i))
