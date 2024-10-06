@@ -15,7 +15,7 @@ for obj in bpy.data.collections[COLLECTION].objects:
     obj.select_set(state=True)
     
     bpy.ops.export_scene.gltf(
-        filepath=ROOT + obj.name + '.gltf',
+        filepath=ROOT + obj.name + '.glb',
         export_format="GLB", # GLTF_SEPARATE or GLB
         check_existing=False,
         use_selection=True,
