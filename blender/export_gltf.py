@@ -21,6 +21,6 @@ for obj in bpy.data.collections[COLLECTION].objects:
         use_selection=True,
         export_import_convert_lighting_mode='COMPAT',
         export_apply=True,
-        filter_glob="*.gltf"
+        filter_glob="*.glb"
     )
 
