@@ -95,6 +95,7 @@ OUTPUT = args.output
 GROUPS = group_sprites(DIR)
 
 for key in GROUPS:
+    print("Processing: " + key)
     new_img = merge_images(GROUPS[key], args.columns)
     
     file_name= key
