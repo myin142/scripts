@@ -11,7 +11,8 @@ if not group:
     print("No group found")
     exit()
 
+visible = not doc.activeNode().visible()
 for child in group.childNodes():
-    child.setVisible(not child.visible())
+    child.setVisible(visible)
 doc.refreshProjection()
 doc.waitForDone()
