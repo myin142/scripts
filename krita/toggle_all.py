@@ -11,8 +11,12 @@ if not group:
     print("No group found")
     exit()
 
-visible = not doc.activeNode().visible()
+print(f"Toggling {group.name()}")
+visible = None
+
 for child in group.childNodes():
+    if visible == None:
+        visible = not child.visible()
     child.setVisible(visible)
 doc.refreshProjection()
 doc.waitForDone()
