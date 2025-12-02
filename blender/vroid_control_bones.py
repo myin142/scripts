@@ -31,8 +31,11 @@ ClothLayer = "Cloth"
 IKLayer = "IK"
 CTRLLayer = "CTRL"
 
+# Just for moving to correct layers
 HairBoneNames = "Hair"
 HandBoneNames = ["Index", "Thumb", "Middle", "Ring", "Little"]
+ArmsBone = "Arm_"
+LegsBone = "Leg_"
 
 # Shapes (needs to be created beforehand!)
 ik_shape = bpy.data.objects["cs_box"]
@@ -49,8 +52,6 @@ LegBone = "_LowerLeg"
 ArmPoleExtendBone = "_UpperArm"
 LegPoleExtendBone = "_UpperLeg"
 HipsBone = "_Hips"
-ArmsBone = "Arm_"
-LegsBone = "Leg_"
 HeadBone = "_Head"
 
 # Custom Bones
@@ -214,7 +215,7 @@ def create_hip_ik():
     bpy.ops.object.mode_set(mode='EDIT')
     hips_ik_bone = create_ik_bone(HipsIkBone, root, hips.head, hips.tail + (hips.tail - hips.head) * 1)
     hips.use_connect = False
-    hips.parent = hips_ik_bone
+    # hips.parent = hips_ik_bone
     move_layer(hips_ik_bone, CTRLLayer)
 
     bpy.ops.object.mode_set(mode='POSE')
